@@ -46,6 +46,9 @@ document.addEventListener("keydown", function (event) {
   }
 });
 
+const backspaceBtn = document.querySelector(".backspace-button");
+backspaceBtn.addEventListener("click", () => handleInput("DEL"));
+
 const buttons = document.querySelectorAll(
   ".numbers button, .operators button, .scientific button"
 );

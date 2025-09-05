@@ -9,15 +9,31 @@ body {
 
 #display {
   height: 30px;
-  width: 500px;
+  width: 400px;
+  font-size: 1.2rem;
+  margin: 10px;
+  margin-bottom: 20px;
+}
+
+.clear-button {
+  height: 30px;
+  width: 50px;
+  font-size: 1.2rem;
+  margin: 10px;
+  margin-bottom: 20px;
+}
+
+.backspace-button {
+  height: 30px;
+  width: 50px;
   font-size: 1.2rem;
   margin: 10px;
   margin-bottom: 20px;
 }
 
 .calculator {
-  background-color: rgb(49, 87, 91);
-  height: 300px;
+  background-color: rgb(220, 35, 35);
+  height: 400px;
   width: 700px;
 }
 
@@ -53,14 +69,6 @@ body {
   width: 200px;
   /* margin-bottom: 20px; */
   margin: 10px;
-}
-
-.clear-button {
-  height: 30px;
-  width: 70px;
-  font-size: 1.2rem;
-  margin: 10px;
-  margin-bottom: 20px;
 }
 
 button {

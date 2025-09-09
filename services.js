@@ -20,17 +20,23 @@ const keyMap = {
   Backspace: "DEL",
   Escape: "C",
   sin: "sin(",
+  asin: "asin(",
   cos: "cos(",
+  acos: "acos(",
   tan: "tan(",
+  atan: "atan(",
   ".": ".",
   π: "π",
   "1/X": "reciprocal",
   "x!": "factorial",
-  sqrt: "sqrt",
+  "√": "√(",
+  "x²": "square",
+  "y√x": "root",
+  ln: "ln",
+  "e^": "exp",
   e: "e",
   "(": "(",
   ")": ")",
-  Inv: "inv",
   log: "log",
   "^": "^",
   Exp: "exp",
@@ -67,11 +73,11 @@ buttons.forEach((button) =>
 const clearBtn = document.querySelector(".clear-button");
 clearBtn.addEventListener("click", () => handleInput("C"));
 
-let inverseMode = false;
-
 function log10(x) {
   return Math.log(x) / Math.LN10;
 }
+
+let rootFirstNum = null;
 
 function handleInput(value) {
   const display = document.getElementById("display");
@@ -82,43 +88,64 @@ function handleInput(value) {
     display.value = display.value.slice(0, -1);
   } else if (value === "=") {
     try {
-      let expression = display.value
-        .replace(/sin\(/g, inverseMode ? "Math.asin(" : "Math.sin(")
-        .replace(/cos\(/g, inverseMode ? "Math.acos(" : "Math.cos(")
-        .replace(/tan\(/g, inverseMode ? "Math.atan(" : "Math.tan(")
-        .replace(/log\(/g, "Math.log(")
-        .replace(/sqrt\(/g, "Math.sqrt(")
-        .replace(/Exp/g, "*10**")
+      let expr = display.value.trim();
+
+      // Handle Factorial
+      expr = expr.replace(/(\d+)!/g, (match, numStr) => {
+        const n = parseInt(numStr, 10);
+
+        if (isNaN(n) || n < 0) throw "Error";
+        if (n > 170) throw "Too Big"; // prevent Infinity
+
+        let fact = 1;
+        for (let i = 2; i <= n; i++) fact *= i;
+        return fact.toString();
+      });
+
+      // Handle Power
+      expr = expr.replace(/\^/g, "**");
+
+      expr = expr
+        .replace(/asin\(/g, "Math.asin(")
+        .replace(/acos\(/g, "Math.acos(")
+        .replace(/atan\(/g, "Math.atan(")
+        .replace(/(?<!a)sin\(/g, "Math.sin(")
+        .replace(/(?<!a)cos\(/g, "Math.cos(")
+        .replace(/(?<!a)tan\(/g, "Math.tan(")
+        .replace(/log\(/g, "Math.log10(")
+        .replace(/√\(/g, "Math.sqrt(")
         .replace(/π/g, "Math.PI")
+        .replace(/²/g, "**2")
+        .replace(/root\(([^,]+),([^)]+)\)/g, (_, y, x) => {
+          return `Math.pow(${x}, 1/${y})`;
+        })
+        .replace(/ln\(/g, "Math.log(")
         .replace(/\be\b/g, "Math.E");
 
-      expression = expression.replace(/(\d+)\^(\d+)/g, "Math.pow($1,$2)");
-      expression = expression.replace(/log\(/g, "log10(");
+      console.log("Final expression:", expr);
 
-      display.value = eval(expression);
-    } catch {
+      const result = Function('"use strict"; return (' + expr + ")")();
+      display.value = result;
+      rootFirstNum = null;
+    } catch (e) {
       display.value = "Error";
+      rootFirstNum = null;
     }
+  } else if (value === "factorial") {
+    display.value += "!";
   } else if (value === "reciprocal") {
     display.value = 1 / parseFloat(display.value || "1");
-  } else if (value === "factorial") {
-    let n = parseInt(display.value);
-    if (isNaN(n) || n < 0) {
-      display.value = "Error";
-    } else {
-      let fact = 1;
-      for (i = 1; i <= n; i++) fact *= i;
-      display.value = fact;
+  } else if (value === "square") {
+    display.value += "²";
+  } else if (value === "root") {
+    if (!rootFirstNum) {
+      rootFirstNum = display.value;
+      display.value = "root(" + rootFirstNum + ",";
     }
-  } else if (value === "inv") {
-    inverseMode = !inverseMode;
-  } else if (value === "Exp") {
-    const lastChar = display.value.slice(-1);
-    if (!lastChar || isNaN(lastChar)) {
-      display.value = "1*10**";
-    } else {
-      display.value += "*10**";
-    }
+  } else if (value === "exp") {
+    display.value += "e^";
+  } else if (value === "ln") {
+    display.value += "ln(";
   } else {
     display.value += value;
   }

@@ -1,0 +1,71 @@
+let rootFirstNum = null; // global variable
+
+function handleInput(value) {
+  const display = document.getElementById("display");
+
+  if (value === "C") {
+    display.value = "";
+    rootFirstNum = null;
+  } else if (value === "DEL") {
+    display.value = display.value.slice(0, -1);
+  } else if (value === "=") {
+    try {
+      let expr = display.value.trim();
+
+      // Handle factorial
+      expr = expr.replace(/(\d+)!/g, (match, numStr) => {
+        const n = parseInt(numStr, 10);
+        if (isNaN(n) || n < 0) throw "Error";
+        if (n > 170) throw "Too Big"; 
+        let fact = 1;
+        for (let i = 2; i <= n; i++) fact *= i;
+        return fact.toString();
+      });
+
+      // Handle power
+      expr = expr.replace(/\^/g, "**");
+
+      // Replace math functions
+      expr = expr
+        .replace(/asin\(/g, "Math.asin(")
+        .replace(/acos\(/g, "Math.acos(")
+        .replace(/atan\(/g, "Math.atan(")
+        .replace(/(?<!a)sin\(/g, "Math.sin(")
+        .replace(/(?<!a)cos\(/g, "Math.cos(")
+        .replace(/(?<!a)tan\(/g, "Math.tan(")
+        .replace(/log\(/g, "Math.log10(")
+        .replace(/√\(/g, "Math.sqrt(")
+        .replace(/π/g, "Math.PI")
+        .replace(/²/g, "**2")
+        .replace(/\be\b/g, "Math.E");
+
+      // Handle root(y,x)
+      expr = expr.replace(/root\(([^,]+),([^)]+)\)/g, (_, y, x) => {
+        return `Math.pow(${x}, 1/${y})`;
+      });
+
+      console.log("Final expression:", expr);
+
+      const result = Function('"use strict"; return (' + expr + ")")();
+      display.value = result;
+      rootFirstNum = null;
+    } catch (e) {
+      display.value = "Error";
+      rootFirstNum = null;
+    }
+  } else if (value === "factorial") {
+    display.value += "!";
+  } else if (value === "reciprocal") {
+    display.value = 1 / parseFloat(display.value || "1");
+  } else if (value === "square") {
+    display.value += "²";
+  } else if (value === "root") {
+    if (!rootFirstNum) {
+      // Store the first number
+      rootFirstNum = display.value;
+      display.value = "root(" + rootFirstNum + ","; 
+    } 
+  } else {
+    display.value += value;
+  }
+}
